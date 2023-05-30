@@ -1,0 +1,46 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    networks:
+      - todos-network
+
+  todos-service:
+    build:
+      context: ./todos-service
+      dockerfile: Dockerfile
+    container_name: todos-service
+    ports:
+      - 3000:3000
+    networks:
+      - todos-network
+
+  notifications-service:
+    build:
+      context: ./notifications-service
+      dockerfile: Dockerfile
+    container_name: notifications-service
+    ports:
+      - 3001:3001
+    networks:
+      - todos-network
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - 8080:80
+    networks:
+      - todos-network
+    depends_on:
+      - todos-service
+      - notifications-service
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
+networks:
+  todos-network:
+    driver: bridge
